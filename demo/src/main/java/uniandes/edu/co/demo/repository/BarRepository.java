@@ -2,6 +2,7 @@ package uniandes.edu.co.demo.repository;
 
 import java.util.List;
 
+import org.bson.Document;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
@@ -35,4 +36,17 @@ public interface BarRepository extends MongoRepository<Bar, Integer> {
     // Obtener todas las bebidas de un bar por su ID
     @Query(value = "{_id: ?0}", fields = "{ 'oferta_bebidas': 1 }")
     List<Bebida> obtenerBebidasPorBar(int id);
+
+    @Query(value = "["
+    + "  { $unwind: '$bares_frecuentados' },"
+    + "  { $lookup: { from: 'bares', localField: 'bares_frecuentados', foreignField: '_id', as: 'bar_detalle' } },"
+    + "  { $unwind: '$bar_detalle' },"
+    + "  { $unwind: '$bar_detalle.oferta_bebidas' },"
+    + "  { $unwind: '$preferencias' },"
+    + "  { $match: { $expr: { $eq: ['$bar_detalle.oferta_bebidas.nombre', '$preferencias'] } } },"
+    + "  { $group: { _id: '$preferencias', total: { $sum: 1 } } },"
+    + "  { $sort: { total: -1 } },"
+    + "  { $limit: 3 }"
+    + "]")
+    List<Document> obtenerBebidasMasConsumidas();
 }
