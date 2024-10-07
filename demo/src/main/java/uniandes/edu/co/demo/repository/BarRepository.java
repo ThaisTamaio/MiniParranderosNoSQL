@@ -2,48 +2,37 @@ package uniandes.edu.co.demo.repository;
 
 import java.util.List;
 
-import org.springframework.data.mongodb.repository.Aggregation;
-
-
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
 
 import uniandes.edu.co.demo.modelo.Bar;
+import uniandes.edu.co.demo.modelo.Bebida;
 
 public interface BarRepository extends MongoRepository<Bar, Integer> {
 
-        
-        public class RespuestaGrupo{
-           String ciudad;
-            int cantidad;
-            public RespuestaGrupo(String ciudad, int cantidad) {
-                this.ciudad = ciudad;
-                this.cantidad = cantidad;
-            }
-            public void setCiudad(String ciudad) {
-                this.ciudad = ciudad;
-            }
-            public void setCantidad(int cantidad) {
-                this.cantidad = cantidad;
-            }
-            public String getCiudad() {
-                return ciudad;
-            }
-            public int getCantidad() {
-                return cantidad;
-            }
-        }
+    // Consultar todos los bares excluyendo la lista de bebidas para mejorar el rendimiento
+    @Query(value = "{}", fields = "{ 'oferta_bebidas': 0 }")
+    List<Bar> buscarTodosLosBares();
 
-        @Query("{_id: ?0}")
-        List<Bar> buscarPorId(int id);
+    // Consultar bar por su ID
+    @Query("{_id: ?0}")
+    List<Bar> buscarPorId(int id);
 
+    // Crear un nuevo bar
+    @Query("{ $insert: { _id: ?0, nombre: ?1, ciudad: ?2, presupuesto: ?3, cant_sedes: ?4, oferta_bebidas: ?5 } }")
+    void insertarBar(int id, String nombre, String ciudad, String presupuesto, int cant_sedes, List<Bebida> oferta_bebidas);
 
-        @Aggregation(pipeline={"{$group:{_id:'$ciudad', cantidad:{$sum:1}}}","{$project:{'ciudad':'$_id',cantidad:1}}"})
-        List<RespuestaGrupo> darBaresPorCiudad();
+    // Actualizar un bar por su ID
+    @Query("{ _id: ?0 }")
+    @Update("{ $set: { nombre: ?1, ciudad: ?2, presupuesto: ?3, cant_sedes: ?4, oferta_bebidas: ?5 }}")
+    void actualizarBar(int id, String nombre, String ciudad, String presupuesto, int cant_sedes, List<Bebida> oferta_bebidas);
 
-        @Query("{_id: ?0}")
-        @Update("{$push:{oferta_bebidas:{nombre:?1, tipo:?2, grado_alcohol:?3, horario:?4, precio:?5}}}")
-        void aniadirBebidaABar(int id_bar, String nombre, String tipo, int grado_alcohol, String horario, int precio);
+    // Eliminar un bar por su ID
+    @Query(value = "{_id: ?0}", delete = true)
+    void eliminarBarPorId(int id);
 
+    // Obtener todas las bebidas de un bar por su ID
+    @Query(value = "{_id: ?0}", fields = "{ 'oferta_bebidas': 1 }")
+    List<Bebida> obtenerBebidasPorBar(int id);
 }

@@ -10,10 +10,6 @@ public class Bebida {
     private int grado_alcohol;
     private String horario;
     private int precio;
-
-
-
-
     
     public Bebida(String nombre, String tipo, int grado_alcohol, String horario, int precio) {
         this.nombre = nombre;

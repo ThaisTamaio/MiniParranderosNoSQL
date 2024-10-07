@@ -22,6 +22,7 @@ public class Bar {
         this.nombre = nombre;
         this.ciudad = ciudad;
         this.cant_sedes = cant_sedes;
+        this.presupuesto = presupuesto;
     }
     public int getId() {
         return id;
